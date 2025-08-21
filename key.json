@@ -1,5 +1,10 @@
 {
-    "ABC123": null,
-    "XYZ789": "d6a4c3b8-0000-1111-2222-abcdef123456",
-    "hxck": ""
+  "hxck": {
+    "user": "",         // vacío si no ha sido usado
+    "expiry": "2025-08-30"  // AAAA-MM-DD
+  },
+  "KEY67890": {
+    "user": "12345678",
+    "expiry": "2025-09-10"
+  }
 }
