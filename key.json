@@ -1,10 +1,5 @@
 {
-  "hxck": {
-    "user": "",         // vacío si no ha sido usado
-    "expiry": "2025-08-30"  // AAAA-MM-DD
-  },
-  "KEY67890": {
-    "user": "12345678",
-    "expiry": "2025-09-10"
-  }
+  "HXCK001": "123456",  // PlayerId 123456 ya la usó
+  "HXCK002": "",         // Key libre
+  "HXCK003": ""          // Key libre
 }
