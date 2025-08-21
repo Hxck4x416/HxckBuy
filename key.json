@@ -1,5 +1,3 @@
 {
-  "ABC123": { "expiry": "2025-12-31" },
-  "DEF456": { "expiry": "2025-07-31" },
-  "Free2Day": { "expiry": "2025-08-23" }
+  "JoinFree2Days": { "expiry": "2025-08-23" }
 }
