@@ -297,7 +297,7 @@ local function moveToDelivery()
     local currentY = hrp.Position.Y
     updateStatus("Flying to delivery...")
 
-    local speed = 800 -- Изменена скорость на 130
+    local speed = 200 -- Изменена скорость на 130
     
     local reached = false
     local maxTime = 8
@@ -539,7 +539,7 @@ local function getTargetPosition(target)
 end
 
 local function moveUntil(conditionFunc, directionFunc, callback)
-    local speed = 500 -- Изменена скорость на 95
+    local speed = 170 -- Изменена скорость на 95
     local conn
     conn = RunService.Heartbeat:Connect(function()
         if not isMoving then
@@ -566,7 +566,7 @@ end
 
 local function moveUntilLinear(conditionFunc, directionFunc, callback)
     local lv, attachment = setupFlight()
-    local speed = 500 -- Изменена скорость на 95
+    local speed = 170 -- Изменена скорость на 95
     local currentY = hrp.Position.Y
     local level = currentY <= 8 and 1 or (currentY <= 24 and 2 or 3)
     if level == 2 then
