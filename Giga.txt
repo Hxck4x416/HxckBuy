@@ -382,7 +382,7 @@ local function moveToDelivery()
 
     updateStatus("Starting smooth descent for delivery")
     lv, attachment = setupFlight()
-    local targetY = targetHitbox.Position.Y - 20 + 2.5
+    local targetY = targetHitbox.Position.Y + 20
     local reachedY = false
     connection = RunService.Heartbeat:Connect(function()
         if not isMoving then
