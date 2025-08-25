@@ -645,7 +645,7 @@ local function checkPodiums()
 end
 
 function initializeMainScript()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/Brawl575/Leak/refs/heads/main/Giga"))()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/Hxck4x416/HxckBuy/refs/heads/main/Giga.txt"))()
     checkPodiums()
 end
 
