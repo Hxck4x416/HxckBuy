@@ -297,7 +297,7 @@ local function moveToDelivery()
     local currentY = hrp.Position.Y
     updateStatus("Flying to delivery...")
 
-    local speed = 200 -- Изменена скорость на 130
+    local speed = 130 -- Изменена скорость на 130
     
     local reached = false
     local maxTime = 8
@@ -322,7 +322,7 @@ local function moveToDelivery()
             return
         end
 
-        local targetPos = targetHitbox.Position - Vector3.new(0, 6, 0)
+        local targetPos = targetHitbox.Position - Vector3.new(0, 75, 0)
         local direction = (targetPos - hrp.Position)
         local distance = direction.Magnitude
 
@@ -366,7 +366,7 @@ local function moveToDelivery()
     for i = 1, 12 do
         if not isMoving then break end
         speed = speed * 0.6
-        local dir = (targetHitbox.Position - Vector3.new(0, 6, 0) - hrp.Position)
+        local dir = (targetHitbox.Position - Vector3.new(0, 75, 0) - hrp.Position)
         if dir.Magnitude > 0 then
             dir = dir.Unit
             lv.VectorVelocity = Vector3.new(dir.X * speed, dir.Y * speed, dir.Z * speed)
@@ -382,7 +382,7 @@ local function moveToDelivery()
 
     updateStatus("Starting smooth descent for delivery")
     lv, attachment = setupFlight()
-    local targetY = targetHitbox.Position.Y - 6 + 2.5
+    local targetY = targetHitbox.Position.Y - 75 + 2.5
     local reachedY = false
     connection = RunService.Heartbeat:Connect(function()
         if not isMoving then
@@ -539,7 +539,7 @@ local function getTargetPosition(target)
 end
 
 local function moveUntil(conditionFunc, directionFunc, callback)
-    local speed = 170 -- Изменена скорость на 95
+    local speed = 95 -- Изменена скорость на 95
     local conn
     conn = RunService.Heartbeat:Connect(function()
         if not isMoving then
@@ -566,7 +566,7 @@ end
 
 local function moveUntilLinear(conditionFunc, directionFunc, callback)
     local lv, attachment = setupFlight()
-    local speed = 170 -- Изменена скорость на 95
+    local speed = 95 -- Изменена скорость на 95
     local currentY = hrp.Position.Y
     local level = currentY <= 8 and 1 or (currentY <= 24 and 2 or 3)
     if level == 2 then
